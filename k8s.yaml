@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-backstage
+  labels:
+    app.kubernetes.io/name: hello-backstage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: hello-backstage
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: hello-backstage
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: html
+              mountPath: /usr/share/nginx/html
+      volumes:
+        - name: html
+          configMap:
+            name: nginx-hello-world-html
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hello-backstage-html
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Hello World</title>
+    </head>
+    <body>
+      <h1>Hello Backstage!</h1>
+    </body>
+    </html>
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-backstage
+spec:
+  selector:
+    app.kubernetes.io/name: hello-backstage
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
